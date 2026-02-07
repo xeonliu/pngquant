@@ -19,6 +19,11 @@ rust-version = "1.67"
 name = "pngquant"
 path = "rust/bin.rs"
 
+[lib]
+name = "pngquant"
+path = "rust/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
 [build-dependencies]
 cc = "1.0.72"
 dunce = "1.0.4"
@@ -29,6 +34,9 @@ libc = "0.2.112"
 libpng-sys = "1.1.9"
 wild = "2.2.0"
 imagequant-sys = { version = "4.1.0", path = "lib/imagequant-sys" }
+imagequant = { version = "4.4.0", path = "lib", optional = true }
+pyo3 = { version = "0.22", features = ["extension-module"], optional = true }
+image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 
 [dependencies.cocoa_image]
 optional = true
@@ -46,6 +54,7 @@ lcms2-static = ["lcms2", "lcms2-sys?/static"]
 png-static = ["libpng-sys/static"]
 z-static = ["libpng-sys/static-libz"]
 static = ["lcms2-static", "png-static"]
+python = ["dep:pyo3", "dep:image", "dep:imagequant"]
 
 [profile.release]
 opt-level = 3

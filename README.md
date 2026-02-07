@@ -6,8 +6,39 @@
 
 ## Usage
 
+### Command Line
+
 - batch conversion of multiple files: `pngquant *.png`
 - Unix-style stdin/stdout chaining: `… | pngquant - | …`
+
+### Python Library
+
+pngquant is also available as a Python library with an easy-to-use interface:
+
+```python
+import pngquant
+
+# Compress a PNG file
+pngquant.compress_file("input.png", "output.png")
+
+# Or with custom options
+options = pngquant.PngQuantOptions(quality_min=65, quality_max=80)
+pngquant.compress_file("input.png", "output.png", options)
+
+# Compress from bytes (no temporary files)
+with open("input.png", "rb") as f:
+    compressed = pngquant.compress_bytes(f.read())
+```
+
+See [PYTHON_README.md](PYTHON_README.md) for detailed Python usage instructions.
+
+**Installation:**
+```bash
+pip install maturin
+maturin develop --release --features python
+```
+
+---
 
 To further reduce file size, try [oxipng](https://lib.rs/oxipng), [ImageOptim](https://imageoptim.com), or [zopflipng](https://github.com/google/zopfli).
 
