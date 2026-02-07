@@ -12,3 +12,18 @@ lib/libimagequant.a
 config.mk
 test/test
 target/
+
+# Python virtual environment
+.venv/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+build/
+dist/
+*.egg-info/
+*.whl
+
+# Test files
+test_*.png
