@@ -4,6 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "pngquant"
+# NOTE: Keep version in sync with Cargo.toml
 version = "3.0.4"
 description = "Convert 24/32-bit PNG images to efficient 8-bit format with alpha channel"
 authors = [

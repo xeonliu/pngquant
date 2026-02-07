@@ -39,19 +39,30 @@ pub fn compress_png_bytes(
     input_data: &[u8],
     options: &QuantOptions,
 ) -> PngResult<Vec<u8>> {
-    // Create temporary files for processing
+    use std::sync::atomic::{AtomicU64, Ordering};
+    
+    // Static counter for unique file naming
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
+    let counter = COUNTER.fetch_add(1, Ordering::Relaxed);
+    
+    // Create temporary files for processing with unique names
     let temp_dir = std::env::temp_dir();
-    let input_path = temp_dir.join(format!("pngquant_input_{}.png", std::process::id()));
-    let output_path = temp_dir.join(format!("pngquant_output_{}.png", std::process::id()));
+    let input_path = temp_dir.join(format!("pngquant_input_{}_{}.png", std::process::id(), counter));
+    let output_path = temp_dir.join(format!("pngquant_output_{}_{}.png", std::process::id(), counter));
     
     // Write input data to temporary file
     std::fs::write(&input_path, input_data)
         .map_err(|e| format!("Failed to write input file: {}", e))?;
     
     // Process the file
+    let input_path_str = input_path.to_str()
+        .ok_or_else(|| "Invalid UTF-8 in input path".to_string())?;
+    let output_path_str = output_path.to_str()
+        .ok_or_else(|| "Invalid UTF-8 in output path".to_string())?;
+    
     let result = compress_png_file(
-        input_path.to_str().unwrap(),
-        output_path.to_str().unwrap(),
+        input_path_str,
+        output_path_str,
         options,
     );
     
@@ -60,13 +71,24 @@ pub fn compress_png_bytes(
         Ok(_) => {
             let data = std::fs::read(&output_path)
                 .map_err(|e| format!("Failed to read output file: {}", e));
-            let _ = std::fs::remove_file(&input_path);
-            let _ = std::fs::remove_file(&output_path);
+            
+            // Clean up temporary files, log errors but don't fail
+            if let Err(e) = std::fs::remove_file(&input_path) {
+                eprintln!("Warning: Failed to remove temporary input file: {}", e);
+            }
+            if let Err(e) = std::fs::remove_file(&output_path) {
+                eprintln!("Warning: Failed to remove temporary output file: {}", e);
+            }
             data
         }
         Err(e) => {
-            let _ = std::fs::remove_file(&input_path);
-            let _ = std::fs::remove_file(&output_path);
+            // Clean up on error too
+            if let Err(err) = std::fs::remove_file(&input_path) {
+                eprintln!("Warning: Failed to remove temporary input file: {}", err);
+            }
+            if let Err(err) = std::fs::remove_file(&output_path) {
+                eprintln!("Warning: Failed to remove temporary output file: {}", err);
+            }
             Err(e)
         }
     };
